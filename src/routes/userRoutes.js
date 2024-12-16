@@ -8,14 +8,14 @@ router.route('/register').post(
     // use file middle ware using multer package 
     upload.fields([
         {
-            name:avatar,
+            name:"avatar",
             maxCount:1
         },
 
         {
-            name:coverImage,
+            name:"coverImage",
             maxCount:1
         }
     ]),
-    RegisterUser)
+    RegisterUser) // Register user is user controller
 export default router

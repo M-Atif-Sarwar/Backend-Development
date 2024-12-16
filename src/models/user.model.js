@@ -62,7 +62,7 @@ const userSchema=new mongoose.Schema(
 // Adding pre middleware for password incryptipn using bcrypt.js
 userSchema.pre("save",async function(next){
     if(!this.isModified("password")) return next()
-    this.password=bcrypt.hash(this.password,11);
+    this.password=await bcrypt.hash(this.password,11);
      next()
 })
 
