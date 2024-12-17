@@ -1,6 +1,7 @@
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {asyncHandler} from "../utils/asyncHandler.js"
+import {uploadFiles} from "../utils/cloudinary.js"
 
 export const RegisterUser=asyncHandler(async (req,res)=>{
  
@@ -12,13 +13,13 @@ export const RegisterUser=asyncHandler(async (req,res)=>{
     //some method check if any item condion is true
     //it reutn ture even one of it is empty
     if(
-        [fullname,username,email,password].some((items)=>items?.trime()==="")
+        [fullname,username,email,password].some((items)=>items?.trim()==="")
     ){
         throw new Error('Fields are empty');
     }
 
     //checking if user already exist in database
-    const existedUser=User.findOne(
+    const existedUser=await User.findOne(
         {
             $or:[{username},{email}]
         }
@@ -31,6 +32,8 @@ export const RegisterUser=asyncHandler(async (req,res)=>{
     // ?. means optionalchaining
     const AvatarLocalPath=req.files?.avatar[0]?.path;
     const CoverImageLocalPath=req.files?.coverImage[0]?.path;
+
+    console.log(AvatarLocalPath);
     if(!AvatarLocalPath){
         throw Error(400,"Avtar is required")
     }
@@ -39,13 +42,24 @@ export const RegisterUser=asyncHandler(async (req,res)=>{
     const avatar=await uploadFiles(AvatarLocalPath)
     const coverImage=await uploadFiles(CoverImageLocalPath)
 
+    console.log(avatar)
+
+     // Check if Cloudinary upload was successful
+     if (!avatar) {
+        throw new Error("Failed to upload avatar");
+    }
+    if (!coverImage) {
+        // You can still create the user without the cover image
+        console.warn("Cover image upload failed");
+    }
+
     // creating user object to pass into database
   const user= await User.create(
         {
             username:username.toLowerCase(),
             email,
             password,
-            avatar:avatar.url,
+            avatar:avatar?.url,
             coverImage:coverImage?.url || "",
             fullname,
         }
